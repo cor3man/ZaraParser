@@ -1,48 +1,38 @@
 import org.apache.commons.cli.CommandLine;
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
-import us.codecraft.xsoup.Xsoup;
-
-import java.io.*;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import java.util.List;
 
 public class Main {
-
-    public static void main(String[] args)
+    public static void main(String[] args) throws InterruptedException
     {
-
         CLParser clParser = new CLParser(args);
         CommandLine cmd = clParser.getCmd();
-
-        String[] sizes = cmd.getOptionValues("size");
         String page = cmd.getOptionValue("uri");
 
-
-        Connection conn = Jsoup.connect(page);
-        Document document;
+        WebDriver driver = Driver.getDriver();
         try {
-            document = conn.get();
-        } catch (IOException e) {
-            System.out.println("Page " + page + " not found");
-            return;
-        }
 
-        Elements elements;
-        for (String size: sizes)
-        {
-            elements = Xsoup.compile("//input[@value='" + size + "' and @name='size']").evaluate(document).getElements();
+            driver.get(page);
 
-            if (elements.toString().isEmpty())
-                System.out.println("Size " + size + " not present on Page");
-            else
-            {
-                //System.out.println(elements.toString());
+            List<WebElement> elements = driver.findElements(By.xpath("//li[contains(@class,'size-selector__size-list-item')]"));
+            WebElement singleStuff = driver.findElement(By.xpath("//div[contains(@class,'button__lines-wrapper')]/span"));
 
-                if (elements.hasAttr("disabled")) System.out.println("The size " + size + " is Disabled");
-                else System.out.println("The size " + size + " is Enabled");
+
+            if (elements != null && elements.size() != 0) {
+                for (WebElement el : elements) {
+                    boolean isOutgOfStock = el.getAttribute("disabled") != null;
+                    if (isOutgOfStock) System.out.println(" " + el.getText() + " is Disabled");
+                    else System.out.println(" " + el.getText() + " is Enabled");
+                }
+            } else {
+                String text = singleStuff.getText();
+                if (text.contains("Dodaj do koszyka")) System.out.println("enabled");
+                else System.out.println("disabled");
             }
+        } finally {
+            driver.quit();
         }
-
     }
 }

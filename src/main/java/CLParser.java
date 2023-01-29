@@ -39,10 +39,5 @@ public class CLParser extends DefaultParser {
         Option uri = new Option("u", "uri", true, "URI of Page to parse");
         uri.setRequired(true);
         options.addOption(uri);
-
-        Option sizes = new Option("s", "size", true, "List of sizes");
-        //sizes.setRequired(true);
-        sizes.setArgs(Option.UNLIMITED_VALUES);
-        options.addOption(sizes);
     }
 }
